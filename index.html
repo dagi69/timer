@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Time Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PERSONAL PRODUCTIVITY</p>
+        <h1>Work Time Tracker</h1>
+        <p id="todayLabel" class="muted"></p>
+      </div>
+      <button id="themeToggle" class="icon-button" type="button" aria-label="Toggle theme">☾</button>
+    </header>
+
+    <main>
+      <section class="stats-grid">
+        <article class="stat-card primary-stat">
+          <span>Today's Work</span>
+          <strong id="todayTotal">00:00:00</strong>
+        </article>
+        <article class="stat-card">
+          <span>Tasks Completed</span>
+          <strong id="todayTaskCount">0</strong>
+        </article>
+        <article class="stat-card">
+          <span>This Week</span>
+          <strong id="weekTotal">00:00:00</strong>
+        </article>
+      </section>
+
+      <section class="workspace-grid">
+        <article class="panel timer-panel">
+          <div class="panel-head">
+            <div>
+              <span class="section-label">CURRENT SESSION</span>
+              <h2 id="modeTitle">Stopwatch</h2>
+            </div>
+            <div class="mode-switch">
+              <button class="mode-button active" data-mode="stopwatch" type="button">Stopwatch</button>
+              <button class="mode-button" data-mode="countdown" type="button">Timer</button>
+            </div>
+          </div>
+
+          <div class="timer-display" id="timerDisplay">00:00:00</div>
+          <div id="timerStatus" class="timer-status">Ready to work</div>
+
+          <div id="taskInputWrap" class="task-input-wrap">
+            <input id="taskName" type="text" maxlength="100" placeholder="What are you working on?">
+          </div>
+
+          <div id="countdownWrap" class="countdown-wrap hidden">
+            <div class="duration-fields">
+              <label>
+                <span>Hours</span>
+                <input id="hoursInput" type="number" min="0" max="99" value="0">
+              </label>
+              <label>
+                <span>Minutes</span>
+                <input id="minutesInput" type="number" min="0" max="59" value="25">
+              </label>
+              <label>
+                <span>Seconds</span>
+                <input id="secondsInput" type="number" min="0" max="59" value="0">
+              </label>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button id="startPauseBtn" class="control-button main-control" type="button">▶ Start</button>
+            <button id="resetTimerBtn" class="control-button" type="button">↻ Reset</button>
+            <button id="finishBtn" class="control-button finish-control" type="button" disabled>✓ Finish</button>
+          </div>
+
+          <div id="alarmBar" class="alarm-bar hidden">
+            <span>⏰ Timer finished</span>
+            <button id="stopAlarmBtn" type="button">Stop Alarm</button>
+          </div>
+        </article>
+
+        <article class="panel today-panel">
+          <div class="panel-head">
+            <div>
+              <span class="section-label">TODAY</span>
+              <h2>Completed Tasks</h2>
+            </div>
+            <button id="resetDayBtn" class="text-button danger" type="button">Reset Day</button>
+          </div>
+          <div id="todayTasks" class="task-list"></div>
+          <div id="todayEmpty" class="empty-state">
+            <div class="empty-icon">◷</div>
+            <strong>No completed tasks yet</strong>
+            <span>Start a task and finish it to build today's record.</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel history-panel">
+        <div class="panel-head history-head">
+          <div>
+            <span class="section-label">HISTORY</span>
+            <h2>Work History</h2>
+          </div>
+          <div class="history-actions">
+            <select id="historyFilter" aria-label="History filter">
+              <option value="all">All History</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+            
+<div class="history-data-actions">
+  <button id="exportDataBtn" type="button">Export JSON</button>
+  <button id="importDataBtn" type="button">Import JSON</button>
+  <input id="importDataInput" type="file" accept=".json,application/json" hidden>
+</div>
+<button id="clearHistoryBtn" class="text-button danger" type="button">Clear History</button>
+          </div>
+        </div>
+        <div id="historyList" class="history-list"></div>
+        <div id="historyEmpty" class="empty-state">
+          <div class="empty-icon">▤</div>
+          <strong>No history yet</strong>
+          <span>Completed work sessions will appear here.</span>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Your data is stored locally in this browser.</span>
+    </footer>
+  </div>
+
+  <div id="confirmModal" class="modal hidden">
+    <div class="modal-card">
+      <h3 id="modalTitle">Are you sure?</h3>
+      <p id="modalText"></p>
+      <div class="modal-actions">
+        <button id="modalCancel" class="control-button" type="button">Cancel</button>
+        <button id="modalConfirm" class="control-button danger-button" type="button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
