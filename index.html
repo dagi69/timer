@@ -87,8 +87,12 @@
             <div>
               <span class="section-label">TODAY</span>
               <h2>Completed Tasks</h2>
+              <div id="workDayStatus" class="work-day-status">No work day started</div>
             </div>
-            <button id="resetDayBtn" class="text-button danger" type="button">Reset Day</button>
+            <div class="day-actions">
+              <button id="finishDayBtn" class="text-button" type="button">Finish Day</button>
+              <button id="resetDayBtn" class="text-button danger" type="button">Reset Day</button>
+            </div>
           </div>
           <div id="todayTasks" class="task-list"></div>
           <div id="todayEmpty" class="empty-state">
