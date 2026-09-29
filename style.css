@@ -1,4 +1,4 @@
-:root {
+ :root {
   --bg: #f5f6f8;
   --surface: #ffffff;
   --surface-2: #f0f2f5;
@@ -401,18 +401,43 @@ h3 { font-size: 20px; margin-bottom: 8px; }
 }
 
 .history-day-head {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 14px 15px;
+  border: 0;
+  color: var(--text);
   background: var(--surface-2);
+  text-align: left;
 }
 
+.history-day-head:hover { background: var(--border); }
+
+.history-day-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.history-day-chevron {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-size: 21px;
+  line-height: 1;
+  transition: transform .18s ease;
+}
+
+.history-day.expanded .history-day-chevron { transform: rotate(90deg); }
 .history-day-title { font-weight: 800; }
 .history-day-total { font-size: 13px; font-weight: 750; }
 
 .history-day-tasks {
   padding: 7px;
+  border-top: 1px solid var(--border);
 }
 
 footer {
