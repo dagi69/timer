@@ -290,6 +290,23 @@ h3 { font-size: 20px; margin-bottom: 8px; }
 
 .hidden { display: none !important; }
 
+.work-day-status {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.day-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#finishDayBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .today-panel {
   display: flex;
   flex-direction: column;
