@@ -9,6 +9,8 @@ let state = {
   running: false,
   startedAt: null,
   workDate: null,
+  workDayDate: null,
+  workDayActive: false,
   pausedElapsed: 0,
   countdownDuration: 0,
   countdownRemaining: 0,
@@ -40,6 +42,8 @@ const el = {
   historyEmpty: document.getElementById("historyEmpty"),
   historyFilter: document.getElementById("historyFilter"),
   resetDayBtn: document.getElementById("resetDayBtn"),
+  finishDayBtn: document.getElementById("finishDayBtn"),
+  workDayStatus: document.getElementById("workDayStatus"),
   clearHistoryBtn: document.getElementById("clearHistoryBtn"),
   alarmBar: document.getElementById("alarmBar"),
   stopAlarmBtn: document.getElementById("stopAlarmBtn"),
@@ -133,6 +137,8 @@ function saveSessionState() {
     running: state.running,
     startedAt: state.startedAt,
     workDate: state.workDate,
+    workDayDate: state.workDayDate,
+    workDayActive: state.workDayActive,
     pausedElapsed: state.pausedElapsed,
     countdownDuration: state.countdownDuration,
     countdownRemaining: state.running
@@ -159,6 +165,8 @@ function loadSessionState() {
     state.mode = session.mode === "countdown" ? "countdown" : "stopwatch";
     state.running = Boolean(session.running);
     state.startedAt = Number(session.startedAt) || null;
+    state.workDayDate = session.workDayDate || null;
+    state.workDayActive = Boolean(session.workDayActive);
     state.pausedElapsed = Math.max(0, Number(session.pausedElapsed) || 0);
     state.countdownDuration = Math.max(0, Number(session.countdownDuration) || 0);
     state.countdownRemaining = Math.max(0, Number(session.countdownRemaining) || 0);
@@ -170,6 +178,15 @@ function loadSessionState() {
     if (session.seconds !== undefined) el.secondsInput.value = session.seconds;
 
     if (state.running && !state.startedAt) state.running = false;
+
+    if (state.workDayActive && !state.workDayDate) {
+      state.workDayActive = false;
+    }
+
+    if (state.running && state.workDate && !state.workDayActive) {
+      state.workDayDate = state.workDate;
+      state.workDayActive = true;
+    }
 
     if (
       state.mode === "countdown" &&
@@ -400,6 +417,16 @@ function renderHistory() {
   el.historyEmpty.classList.toggle("hidden", days.length > 0);
 }
 
+function renderWorkDayStatus() {
+  if (state.workDayActive && state.workDayDate) {
+    el.workDayStatus.textContent = `Work Day: ${formatDate(state.workDayDate)} · In progress`;
+    el.finishDayBtn.disabled = state.running;
+  } else {
+    el.workDayStatus.textContent = "No work day started";
+    el.finishDayBtn.disabled = false;
+  }
+}
+
 function renderAll() {
   el.todayLabel.textContent = new Date().toLocaleDateString(undefined, {
     weekday: "long",
@@ -409,6 +436,7 @@ function renderAll() {
   });
 
   renderStats();
+  renderWorkDayStatus();
   renderToday();
   renderHistory();
   updateDisplay();
@@ -471,7 +499,13 @@ function startSession() {
   }
 
   state.startedAt = Date.now();
-  if (!state.workDate) state.workDate = todayKey(new Date(state.startedAt));
+
+  if (!state.workDayActive) {
+    state.workDayDate = todayKey(new Date(state.startedAt));
+    state.workDayActive = true;
+  }
+
+  state.workDate = state.workDayDate;
   state.running = true;
 
   stopAlarm();
@@ -523,7 +557,7 @@ function finishTask() {
 
   state.running = false;
   state.startedAt = null;
-  state.workDate = null;
+  state.workDate = state.workDayActive ? state.workDayDate : null;
   state.pausedElapsed = 0;
   state.countdownDuration = 0;
   state.countdownRemaining = 0;
@@ -532,7 +566,8 @@ function finishTask() {
   el.taskName.value = "";
 
   stopAlarm();
-  clearSessionState();
+  if (state.workDayActive) saveSessionState();
+  else clearSessionState();
   renderAll();
 }
 
@@ -550,7 +585,7 @@ function resetTimer(confirm = true) {
 
   state.running = false;
   state.startedAt = null;
-  state.workDate = null;
+  state.workDate = state.workDayActive ? state.workDayDate : null;
   state.pausedElapsed = 0;
   state.countdownDuration = 0;
   state.countdownRemaining = 0;
@@ -635,6 +670,33 @@ function playAlarm() {
 function stopAlarm() {
   state.alarmOn = false;
   el.alarmBar.classList.add("hidden");
+}
+
+function finishDay() {
+  if (!state.workDayActive) return;
+
+  if (state.running || currentElapsed() > 0) {
+    showConfirm(
+      "Finish work day?",
+      "Finish the current task first. The work day will remain open until the active task is completed or reset.",
+      () => {}
+    );
+    return;
+  }
+
+  const date = state.workDayDate;
+  showConfirm(
+    "Finish work day?",
+    `This will close ${formatDate(date)}. Your completed tasks will remain in History.`,
+    () => {
+      state.workDayActive = false;
+      state.workDayDate = null;
+      state.workDate = null;
+      clearSessionState();
+      saveSessionState();
+      renderAll();
+    }
+  );
 }
 
 function resetDay() {
@@ -767,6 +829,7 @@ el.resetTimerBtn.addEventListener("click", () => resetTimer(true));
 el.finishBtn.addEventListener("click", finishTask);
 el.stopAlarmBtn.addEventListener("click", stopAlarm);
 el.resetDayBtn.addEventListener("click", resetDay);
+el.finishDayBtn?.addEventListener("click", finishDay);
 el.clearHistoryBtn.addEventListener("click", clearHistory);
 el.historyFilter.addEventListener("change", renderHistory);
 
