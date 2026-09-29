@@ -1,4 +1,4 @@
-const STORAGE_KEY = "workTimeTracker.v1";
+ const STORAGE_KEY = "workTimeTracker.v1";
 const SESSION_KEY = "workTimeTracker.session.v1";
 const THEME_KEY = "workTimeTracker.theme";
 const JSON_FILE = "work-time-tracker-data.json";
@@ -8,6 +8,7 @@ let state = {
   mode: "stopwatch",
   running: false,
   startedAt: null,
+  workDate: null,
   pausedElapsed: 0,
   countdownDuration: 0,
   countdownRemaining: 0,
@@ -131,6 +132,7 @@ function saveSessionState() {
     mode: state.mode,
     running: state.running,
     startedAt: state.startedAt,
+    workDate: state.workDate,
     pausedElapsed: state.pausedElapsed,
     countdownDuration: state.countdownDuration,
     countdownRemaining: state.running
@@ -363,11 +365,14 @@ function renderHistory() {
 
     return `
       <div class="history-day">
-        <div class="history-day-head">
-          <span class="history-day-title">${formatDate(key)}</span>
+        <button class="history-day-head" type="button" aria-expanded="false">
+          <span class="history-day-title-wrap">
+            <span class="history-day-chevron">›</span>
+            <span class="history-day-title">${formatDate(key)}</span>
+          </span>
           <span class="history-day-total">${formatHumanDuration(dayTotal(key))}</span>
-        </div>
-        <div class="history-day-tasks">
+        </button>
+        <div class="history-day-tasks" hidden>
           ${tasks.map(task => `
             <div class="task-item">
               <div class="task-info">
@@ -381,6 +386,16 @@ function renderHistory() {
       </div>
     `;
   }).join("");
+
+  el.historyList.querySelectorAll(".history-day-head").forEach(button => {
+    button.addEventListener("click", () => {
+      const tasks = button.nextElementSibling;
+      const expanded = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!expanded));
+      tasks.hidden = expanded;
+      button.closest(".history-day").classList.toggle("expanded", !expanded);
+    });
+  });
 
   el.historyEmpty.classList.toggle("hidden", days.length > 0);
 }
@@ -456,6 +471,7 @@ function startSession() {
   }
 
   state.startedAt = Date.now();
+  if (!state.workDate) state.workDate = todayKey(new Date(state.startedAt));
   state.running = true;
 
   stopAlarm();
@@ -493,8 +509,9 @@ function finishTask() {
 
   const now = Date.now();
   const start = now - duration * 1000;
+  const workDate = state.workDate || todayKey(new Date(start));
 
-  getDay().tasks.push({
+  getDay(workDate).tasks.push({
     id: `${now}-${Math.random().toString(36).slice(2)}`,
     name,
     start,
@@ -506,6 +523,7 @@ function finishTask() {
 
   state.running = false;
   state.startedAt = null;
+  state.workDate = null;
   state.pausedElapsed = 0;
   state.countdownDuration = 0;
   state.countdownRemaining = 0;
@@ -532,6 +550,7 @@ function resetTimer(confirm = true) {
 
   state.running = false;
   state.startedAt = null;
+  state.workDate = null;
   state.pausedElapsed = 0;
   state.countdownDuration = 0;
   state.countdownRemaining = 0;
